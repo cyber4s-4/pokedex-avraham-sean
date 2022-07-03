@@ -1,13 +1,102 @@
+
+body {
+    background-image: url('pokelogo.jpg');
+    //sdfsdf
+}
+button{
+    display: inline-block;
+    background: #ff523b;
+    width: 170px;
+    height: 60px;
+    color: #fff;
+    padding: 8px 30px;
+    margin: 30px 0;
+    border-radius: 30px;
+    transition: background 0.5s;
+  }
+  button:hover{
+    background: #563434;
+    .get-random{
+    display: flex;
+    background: #ff523b;
+    width: 200px;
+    height: 600px;
+    color: #fff;
+    padding: 8px 30px;
+    margin: 30px 0;
+    border-radius: 30px;
+    transition: background 0.5s;
+    }
+    .get-random{
+        background: #563434;
+    }
+}
 .list {
     display: flex;
-    flex-direction: column;
     justify-content: center;
-    .pokemonSpecs{
-        margin: 10px 200px;
-        min-height: 150px;
-        border: solid brown 1px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    align-content: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+    transition: all 0.5s ease;
+    .pokemonSpecs {
+        background-color: #eee;
+        border-radius: 10px;
+        box-shadow: 0 3px 15px rgba(100, 100, 100, 0.5);
+        margin: 10px;
+        padding: 20px;
+        width: 186px;
+        text-align: center;
+    }
+    .img{
+        width: 70%;
+    }
+}
+.pokemonSpecs:hover{
+    transform:translateY(-8px) ;
+}
+h1 {
+    font-size: 70px;
+    font-weight: 600;
+    background-image: linear-gradient(to left, #ff0000, #9f5454);
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+  }
+  .search-input {
+    background-color: #fff;
+    height: 55px;
+    width: 70%;
+    border: none;
+    border-radius: 5px;
+    padding: 0 60px 0 20px;
+    font-size: 16px;
+    box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.1);
+    &::placeholder {
+      font-family: 'Cabin', sans-serif;
+    }}
+
+ 
+#pokeLogo {  
+    margin: auto;
+    max-width: 100%;  
+    height: auto; 
+}  
+
+.onePokemonSpecs{
+    background-color: #eee;
+    border-radius: 10px;
+    box-shadow: 0 3px 15px rgba(100, 100, 100, 0.5);
+    padding: 50px;
+    padding-top: 0px;
+    width: 600px;
+    text-align: center;
+    font-size: 40px;
+    font-family:sans-serif;
+    spam {
+        font-weight: bold;
+        font-size: 60px;
+    }
+    .img{
+        width: 100%;
     }
 }
