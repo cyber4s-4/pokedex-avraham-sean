@@ -1,7 +1,6 @@
 async function fetchPokemonNames() {
     const data = await fetch(`https://pokeapi.co/api/v2/pokedex/1/`)
         .then(response => response.json());
-    console.log(data);
     return data.pokemon_entries;
 
     // const data2 = await fetch(data.pokemon_entries[id-1].pokemon_species.url)

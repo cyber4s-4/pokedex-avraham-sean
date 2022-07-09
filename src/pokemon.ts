@@ -1,3 +1,4 @@
+import {fetchOnePokemon} from "./data"
 type pokemon_species = {
   name: string,
   id: string,
@@ -10,7 +11,7 @@ type pokemon_species = {
   img: string
 }
 
-export default class pokemonList {
+export class pokemonRenderer {
   data: pokemon_species;
   parentEl: HTMLElement;
   constructor(_data: pokemon_species, _parentEl: HTMLElement) {
@@ -19,8 +20,8 @@ export default class pokemonList {
 
   }
 
-  static render1(_data: pokemon_species,_parentEl: HTMLElement) {
-    const oPokemon = new pokemonList(_data,_parentEl)
+  static general(_data: pokemon_species,_parentEl: HTMLElement) {
+    const oPokemon = new pokemonRenderer(_data,_parentEl)
     const ePokemon: HTMLDivElement = document.createElement('div');
     ePokemon.innerHTML = `
       <img class="img" src="${oPokemon.data.img}"><br>
@@ -29,10 +30,11 @@ export default class pokemonList {
     ePokemon.classList.add('pokemonSpecs');
     ePokemon.setAttribute('id', oPokemon.data.id);
     oPokemon.parentEl.append(ePokemon);
+    ePokemon.addEventListener("click", () => fetchAndRender(_data))
   }
 
-  static render2(_data: pokemon_species,_parentEl: HTMLElement) {
-    const oPokemon = new pokemonList(_data,_parentEl)
+  static detailed(_data: pokemon_species,_parentEl: HTMLElement) {
+    const oPokemon = new pokemonRenderer(_data,_parentEl)
     const ePokemon: HTMLDivElement = document.createElement('div');
     ePokemon.innerHTML = `
       <img class="img" src="${oPokemon.data.img}"><br>
@@ -45,7 +47,16 @@ export default class pokemonList {
       `;
     ePokemon.classList.add('onePokemonSpecs');
     ePokemon.setAttribute('id', oPokemon.data.id);
+    console.log(ePokemon);
+    console.log(oPokemon.parentEl);
     oPokemon.parentEl.append(ePokemon);
   }
 }
 
+
+export async function fetchAndRender(obj: pokemon_species) {
+  const eMain = document.getElementsByClassName("list")[0] as HTMLDivElement;
+  const pokemon = await fetchOnePokemon(`https://pokeapi.co/api/v2/pokemon/${obj.id}`);
+  eMain.innerHTML = "";
+  pokemonRenderer.detailed(pokemon,eMain);
+}

@@ -1,5 +1,5 @@
-import { pokemonsNames, fetchOnePokemon} from "./data";
-import pokemonList from "./pokemon";
+import { pokemonsNames} from "./data";
+import {pokemonRenderer, fetchAndRender} from "./pokemon";
 type pokemon_species = {
   name: string,
   id: string,
@@ -15,14 +15,14 @@ async function init() {
   const list: pokemon_species[] = await pokemonsNames;
   const eMain = document.getElementsByClassName("list")[0] as HTMLDivElement;
   for (let i = 0; i < 30; i++) {
-    pokemonList.render1(list[i], eMain);
+    pokemonRenderer.general(list[i], eMain);
   }
   const eRundomButtom = document.getElementsByClassName("get-random")[0] as HTMLButtonElement;;
   eRundomButtom.addEventListener("click", ()=>{
     eMain.innerHTML = "";
     for (let i = 0; i < 30; i++) {
       const id: number = Math.floor(Math.random()*list.length)
-      pokemonList.render1(list[id], eMain);
+      pokemonRenderer.general(list[id], eMain);
     }
   });
   const eSearchInput = document.getElementsByClassName("search-input")[0] as HTMLInputElement;
@@ -40,13 +40,7 @@ function searching(eSearchInput: HTMLInputElement, list: pokemon_species[]) {
     }
   });
   if (found) {
-    specsList(found);
+    fetchAndRender(found);
   } else alert("pokemon hasn't found");
-}
-async function specsList(obj: pokemon_species) {
-  const eMain = document.getElementsByClassName("list")[0] as HTMLDivElement;
-  const pokemon = await fetchOnePokemon(`https://pokeapi.co/api/v2/pokemon/${obj.id}`);
-  eMain.innerHTML = "";
-  pokemonList.render2(pokemon,eMain);
 }
 init();
