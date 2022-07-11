@@ -1,18 +1,8 @@
-import { pokemonsNames} from "./data";
-import {pokemonRenderer, fetchAndRender} from "./pokemon";
-type pokemon_species = {
-  name: string,
-  id: string,
-  url: string,
-  specs: {
-    type: string,
-    weight: string,
-    height: string
-  },
-  img: string
-}
+import {fetchServer} from "./data";
+import {pokemonRenderer, pokemon_species} from "./pokemon";
+
 async function init() {
-  const list: pokemon_species[] = await pokemonsNames;
+  const list: pokemon_species[] = await fetchServer();
   const eMain = document.getElementsByClassName("list")[0] as HTMLDivElement;
   for (let i = 0; i < 30; i++) {
     pokemonRenderer.general(list[i], eMain);
@@ -30,8 +20,10 @@ async function init() {
   eSearchInput.addEventListener("keyup",(e)=>{
     if (e.key == "Enter") searching(eSearchInput,list);
   });
+  
   eSearchButton.addEventListener("click",()=>searching(eSearchInput,list));
 }
+
 function searching(eSearchInput: HTMLInputElement, list: pokemon_species[]) {
   const sSearchInput = eSearchInput.value;
   const found: pokemon_species | undefined = list.find(pokenon=>{
@@ -40,7 +32,10 @@ function searching(eSearchInput: HTMLInputElement, list: pokemon_species[]) {
     }
   });
   if (found) {
-    fetchAndRender(found);
+    const eMain = document.getElementsByClassName("list")[0] as HTMLDivElement;
+    eMain.innerHTML = "";
+    pokemonRenderer.detailed(found, eMain);
   } else alert("pokemon hasn't found");
 }
+
 init();

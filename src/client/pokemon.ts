@@ -1,13 +1,10 @@
-import {fetchOnePokemon} from "./data"
-type pokemon_species = {
+export type pokemon_species = {
   name: string,
   id: string,
   url: string,
-  specs: {
-    type: string,
-    weight: string,
-    height: string
-  },
+  pokemonTypes: string[],
+  weight: string,
+  height: string,
   img: string
 }
 
@@ -30,7 +27,10 @@ export class pokemonRenderer {
     ePokemon.classList.add('pokemonSpecs');
     ePokemon.setAttribute('id', oPokemon.data.id);
     oPokemon.parentEl.append(ePokemon);
-    ePokemon.addEventListener("click", () => fetchAndRender(_data))
+    ePokemon.addEventListener("click", () => {
+      _parentEl.innerHTML = "";
+      pokemonRenderer.detailed(_data,_parentEl);
+    })
   }
 
   static detailed(_data: pokemon_species,_parentEl: HTMLElement) {
@@ -40,23 +40,13 @@ export class pokemonRenderer {
       <img class="img" src="${oPokemon.data.img}"><br>
       <spam>${oPokemon.data.name}</spam><br>
       #${oPokemon.data.id}<br>
-      type: ${oPokemon.data.specs.type}<br>
-      weight: ${oPokemon.data.specs.weight}  <br>
-      height: ${oPokemon.data.specs.height}  <br>
+      type: ${oPokemon.data.pokemonTypes}<br>
+      weight: ${+oPokemon.data.weight / 10} kg <br>
+      height: ${+oPokemon.data.height * 10} cm  <br>
       </div>
       `;
     ePokemon.classList.add('onePokemonSpecs');
     ePokemon.setAttribute('id', oPokemon.data.id);
-    console.log(ePokemon);
-    console.log(oPokemon.parentEl);
     oPokemon.parentEl.append(ePokemon);
   }
-}
-
-
-export async function fetchAndRender(obj: pokemon_species) {
-  const eMain = document.getElementsByClassName("list")[0] as HTMLDivElement;
-  const pokemon = await fetchOnePokemon(`https://pokeapi.co/api/v2/pokemon/${obj.id}`);
-  eMain.innerHTML = "";
-  pokemonRenderer.detailed(pokemon,eMain);
 }
