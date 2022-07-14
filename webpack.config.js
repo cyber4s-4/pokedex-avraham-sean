@@ -1,10 +1,14 @@
 module.exports = {
   mode: 'development',
-  entry: "./dist/tsc/client/app.js",
   devtool: "source-map",
+  target: "node",
+  entry: {
+    'client/app': './dist/tsc/client/app.js',
+    'server/server': './dist/tsc/server/server.js',
+  },
   output: {
-    filename: "app.js",
-    library: "app"
+    path: __dirname,
+    filename: '[name].js'
   },
   module: {
     rules: [

@@ -3,159 +3,126 @@ const clean = require('gulp-clean');
 const rename = require('gulp-rename');
 const webpack = require('webpack-stream');
 const sass = require('gulp-sass')(require('sass'));
-const { exec } = require('child_process');
-
+const browserSync = require('browser-sync').create();
+const { exec, execSync, execFile } = require('child_process');
 const webpackConfig = require('./webpack.config.js');
+const { task } = require('gulp');
 
 // Removes previous dist
 gulp.task('clean', () => {
-  return gulp.src('./dist', { allowEmpty: true })
+  return gulp.src('./dist', {
+      allowEmpty: true
+    })
     .pipe(clean());
 });
 
 // Creates js bundle from several js files
-gulp.task('bundle', () => {
+gulp.task('webpack', () => {
   return webpack(webpackConfig)
     .pipe(gulp.dest('./dist'))
 });
 
 // Converts scss to css
 gulp.task('scss', () => {
-  return gulp.src('./src/client/**/*.scss')
+  return gulp.src('./src/client/*.scss')
     .pipe(sass())
-    .pipe(gulp.dest('./dist'));
+    .pipe(gulp.dest('./dist/client/'));
 });
 
-// Transfers index
-gulp.task('index', () => {
-  return gulp.src(['./src/client/**/*.html'])
-    .pipe(gulp.dest('./dist'));
-});
-
-// Transfers index
-gulp.task('icon', () => {
-  return gulp.src(['./src/client/favicon.ico','./src/client/pokelogo.jpg'])
-    .pipe(gulp.dest('./dist'));
-});
-// Transfers index
-gulp.task('transerver', () => {
-  return gulp.src(['./src/server/*','!./src/server/*.ts'])
-    .pipe(gulp.dest('./dist/tsc/server'));
+// Transfers static files
+gulp.task('copy', () => {
+  return gulp.src(['src/**/*', '!src/**/*.ts', '!src/**/*.scss'])
+    .pipe(gulp.dest('./dist/'));
 });
 
 // Watch scss files
 gulp.task('watch-scss', () => {
-  return gulp.watch('./src/client/**/*.scss', gulp.series('scss'));
+  return gulp.watch('./src/client/css/**/*.scss', gulp.series('scss'));
 });
 
-// Watch html files
-gulp.task('watch-html', () => {
-  return gulp.watch(['./src/client/**/*.html'], gulp.series('index'));
+
+// Watch static files
+gulp.task('watch-static', () => {
+  return gulp.watch(['src/**/*', '!src/**/*.ts', '!src/**/*.scss'], gulp.series('copy'));
 });
 
 // Watch tsc files
-gulp.task('watch-tsc', () => {
-  return gulp.watch('./dist/tsc/client/**/*.js', gulp.series('bundle'));
+gulp.task('watch-js', () => {
+  return gulp.watch('./dist/client/js/**/*.js', gulp.series('webpack'));
 });
 
 // Initial ts compile
 gulp.task('tsc', cb => {
-  exec('tsc', () => cb());
+  exec('tsc', (err, msg) => {
+    cb();
+  });
 });
 
 // Watch ts files and recompile
 gulp.task('tsc-w', () => {
-  const tsc = exec('tsc -w --preserveWatchOutput --pretty');
-
-  tsc.stdout.on('data', data => console.log(data));
-  tsc.stderr.on('data', data => console.error(data));
-
-  tsc.on('close', code => console.log(`tsc exited with code ${code}`));
+  exec('tsc -w');
 });
 
-// Start express
-gulp.task('express', () => {
-  const tsc = exec('nodemon --watch ./src/server ./src/server/server.ts');
-  tsc.stdout.on('data', data => console.log(data));
-  tsc.stderr.on('data', data => console.error(data));
+// start nodemon
+gulp.task('nodemon', () => {
+  exec('nodemon dist/server/server.js');
+  exec('google-chrome http://localhost:3000');
 });
 
-// Build all
 gulp.task('build', gulp.series(
   'clean',
+  'copy',
   'scss',
-  'index',
-  'icon',
-  'transerver',
   'tsc',
-  'bundle',
-));
-
-// Heroku copy dist files
-gulp.task('heroku-copy-dist', () => {
-  return gulp.src([
-    './dist/app.js',
-    './dist/app.js.map',
-    './dist/favicon.ico',
-    './dist/pokelogo.jpg',
-    './dist/index.html',
-    './dist/styles.css',
-  ])
-    .pipe(gulp.dest('./deploy/dist'));
-});
-
-// Heroku copy root files
-gulp.task('heroku-copy-root', () => {
-  return gulp.src([
-    './package.json',
-    './package-lock.json',
-    './Procfile',
-    './dist/tsc/server/server.js',
-    './dist/tsc/server/pokemonData.json',
-  ])
-    .pipe(gulp.dest('./deploy'));
-});
-
-// Heroku clean files
-gulp.task('heroku-clean', () => {
-  return gulp.src([
-    './deploy/server.js',
-    './dist/tsc/server/pokemonData.json',
-    './deploy/Procfile',
-    './deploy/package.json',
-    './deploy/package-lock.json',
-    './deploy/dist',
-  ], { allowEmpty: true })
-    .pipe(clean());
-});
-
-// Heroku deploy
-gulp.task('deploy', gulp.series(
-  'heroku-clean',
-  'build',
-  'heroku-copy-root',
-  'heroku-copy-dist',
-));
-
-// Run all (without express)
-gulp.task('dev', gulp.series(
-  'build',
-  gulp.parallel(
-    'watch-scss',
-    'watch-html',
-    'watch-tsc',
-    'tsc-w',
-  ),
-));
+  'webpack',
+))
 
 // Run all together
 gulp.task('default', gulp.series(
   'build',
   gulp.parallel(
     'watch-scss',
-    'watch-html',
-    'watch-tsc',
+    'watch-static',
+    'watch-js',
     'tsc-w',
-    'express',
+    'nodemon',
   ),
+));
+
+
+gulp.task('clean-deploy', () => {
+  return gulp.src(['./deploy/'], {
+      allowEmpty: true
+    })
+    .pipe(clean());
+});
+
+gulp.task('copy-dist-to-deploy', () => {
+  return gulp.src(['./dist/**/*','!./dist/cache/**/*','!./dist/tsc/**/*','!./dist/cache','!./dist/tsc'])
+    .pipe(gulp.dest('./deploy/dist'));
+});
+
+gulp.task('copy-node-to-deploy', () => {
+  return gulp.src([
+      './package.json',
+      './package-lock.json',
+      './Procfile'
+    ])
+    .pipe(gulp.dest('./deploy'));
+});
+
+// task('deploy-heruku', (cb) => {
+//   execSync('chmod +x deploy.sh');
+//   execFile('./deploy.sh', (err) => {
+//     console.log(err);
+//     cb()
+//   })
+// })
+
+gulp.task('deploy', gulp.series(
+  'build',
+  'clean-deploy',
+  'copy-dist-to-deploy',
+  'copy-node-to-deploy',
+  // 'deploy-heruku'
 ));
