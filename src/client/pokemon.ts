@@ -1,7 +1,6 @@
 export type pokemon_species = {
   name: string,
   id: string,
-  url: string,
   pokemonTypes: string[],
   weight: string,
   height: string,

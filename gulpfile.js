@@ -11,57 +11,86 @@ const { task } = require('gulp');
 // Removes previous dist
 gulp.task('clean', () => {
   return gulp.src('./dist', {
-      allowEmpty: true
-    })
+    allowEmpty: true
+  })
     .pipe(clean());
 });
 
-// Creates js bundle from several js files
-gulp.task('webpack', () => {
-  return webpack(webpackConfig)
-    .pipe(gulp.dest('./dist'))
+// copies all files exept ts and scss 
+gulp.task('copy-no-transpile', () => {
+  return gulp.src(['src/**/*', '!src/**/*.ts', '!src/**/*.scss'])
+    .pipe(gulp.dest('./dist/'));
 });
 
 // Converts scss to css
-gulp.task('scss', () => {
+gulp.task('transpile-scss', () => {
   return gulp.src('./src/client/*.scss')
     .pipe(sass())
     .pipe(gulp.dest('./dist/client/'));
 });
 
-// Transfers static files
-gulp.task('copy', () => {
-  return gulp.src(['src/**/*', '!src/**/*.ts', '!src/**/*.scss'])
-    .pipe(gulp.dest('./dist/'));
-});
-
-// Watch scss files
-gulp.task('watch-scss', () => {
-  return gulp.watch('./src/client/css/**/*.scss', gulp.series('scss'));
-});
-
-
-// Watch static files
-gulp.task('watch-static', () => {
-  return gulp.watch(['src/**/*', '!src/**/*.ts', '!src/**/*.scss'], gulp.series('copy'));
-});
-
-// Watch tsc files
-gulp.task('watch-js', () => {
-  return gulp.watch('./dist/client/js/**/*.js', gulp.series('webpack'));
-});
-
-// Initial ts compile
-gulp.task('tsc', cb => {
+// Converts ts to js
+gulp.task('transpile-ts', cb => {
   exec('tsc', (err, msg) => {
     cb();
   });
 });
 
+// Creates js bundle from client js files
+gulp.task('bundle-client-js', () => {
+  return webpack(webpackConfig)
+    .pipe(gulp.dest('./dist'))
+});
+
+// Transfers static files
+gulp.task('copy-server-js', () => {
+  return gulp.src(['dist/tsc/server/**/*.js'])
+    .pipe(gulp.dest('./dist/server'));
+});
+
+// Creates/Updates the dist folder
+gulp.task('build', gulp.series(
+  'clean',
+  'copy-no-transpile',
+  'transpile-scss',
+  'transpile-ts',
+  'bundle-client-js',
+  'copy-server-js'
+))
+
+// Watch static files
+gulp.task('watch-static', () => {
+  return gulp.watch(['src/**/*', '!src/**/*.ts', '!src/**/*.scss'], gulp.series('copy-no-transpile'));
+});
+
+// Watch scss files
+gulp.task('watch-scss', () => {
+  return gulp.watch('./src/client/**/*.scss', gulp.series('transpile-scss'));
+});
+
 // Watch ts files and recompile
-gulp.task('tsc-w', () => {
+gulp.task('watch-ts', () => {
   exec('tsc -w');
 });
+
+// Watch tsc client files
+gulp.task('watch-client-js', () => {
+  return gulp.watch('./dist/tsc/client/**/*.js', gulp.series('bundle-client-js'));
+});
+
+// Watch tsc setver files
+gulp.task('watch-server-js', () => {
+  return gulp.watch('./dist/tsc/server/**/*.js', gulp.series('copy-server-js'));
+});
+
+// Watch all files
+gulp.task('watch', gulp.parallel(
+  'watch-static',
+  'watch-scss',
+  'watch-ts',
+  'watch-client-js',
+  'watch-server-js',
+));
 
 // start nodemon
 gulp.task('nodemon', () => {
@@ -69,45 +98,33 @@ gulp.task('nodemon', () => {
   exec('google-chrome http://localhost:3000');
 });
 
-gulp.task('build', gulp.series(
-  'clean',
-  'copy',
-  'scss',
-  'tsc',
-  'webpack',
-))
-
 // Run all together
 gulp.task('default', gulp.series(
   'build',
   gulp.parallel(
-    'watch-scss',
-    'watch-static',
-    'watch-js',
-    'tsc-w',
+    'watch',
     'nodemon',
   ),
 ));
 
-
 gulp.task('clean-deploy', () => {
   return gulp.src(['./deploy/'], {
-      allowEmpty: true
-    })
+    allowEmpty: true
+  })
     .pipe(clean());
 });
 
 gulp.task('copy-dist-to-deploy', () => {
-  return gulp.src(['./dist/**/*','!./dist/cache/**/*','!./dist/tsc/**/*','!./dist/cache','!./dist/tsc'])
+  return gulp.src(['./dist/**/*', '!./dist/cache/**/*', '!./dist/tsc/**/*', '!./dist/cache', '!./dist/tsc'])
     .pipe(gulp.dest('./deploy/dist'));
 });
 
 gulp.task('copy-node-to-deploy', () => {
   return gulp.src([
-      './package.json',
-      './package-lock.json',
-      './Procfile'
-    ])
+    './package.json',
+    './package-lock.json',
+    './Procfile'
+  ])
     .pipe(gulp.dest('./deploy'));
 });
 
