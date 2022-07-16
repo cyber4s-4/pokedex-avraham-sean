@@ -4,11 +4,11 @@ import path from 'path';
 
 interface Item {
     name: string,
-    id: string,
+    id: number,
     img: string,
     pokemonTypes: string[],
-    height: string,
-    weight: string
+    height: number,
+    weight: number
 }
 
 export default async function run() {
@@ -17,17 +17,28 @@ export default async function run() {
     try {
     await client.connect();
     const db: Db = client.db('pokedex');
-    const pokemons: Collection<Item> = db.collection('pokemons');
-    await pokemons.deleteMany({});
-    console.log("earased");
-    
-    const read: Buffer = await fs.promises.readFile(path.join(__dirname, '../../server/pokemonData.json'));
-    const pokemonlist: Item[] = JSON.parse(read.toString());
-    await pokemons.insertMany(pokemonlist);
-    return 'created database';
+    const coll: Collection<Item> = db.collection('pokemons');
+    await createDB(coll);
+    // await get20Pokemons(coll);
     } finally {
         await client.close();
     }
 }
+
+async function createDB(pokemonColl: Collection<Item>) {
+    await pokemonColl.deleteMany({});
+    console.log("earased");
+    
+    const read: Buffer = await fs.promises.readFile(path.join(__dirname, "pokemonData.json"));
+    const pokemonlist: Item[] = JSON.parse(read.toString());
+    await pokemonColl.insertMany(pokemonlist);
+    console.log("created database");
+}
+
+// async function get20Pokemons(pokemonColl: Collection<Item>) {
+//     pokemonColl.find({id: {"$lst": 31, "$grt": 0}});
+
+
+// }
 
 run().catch(console.log).then(console.log);

@@ -1,9 +1,9 @@
 export type pokemon_species = {
   name: string,
-  id: string,
+  id: number,
   pokemonTypes: string[],
-  weight: string,
-  height: string,
+  weight: number,
+  height: number,
   img: string
 }
 
@@ -24,7 +24,7 @@ export class pokemonRenderer {
       ${oPokemon.data.name}<br>
       #${oPokemon.data.id}<br>`;
     ePokemon.classList.add('pokemonSpecs');
-    ePokemon.setAttribute('id', oPokemon.data.id);
+    ePokemon.setAttribute('id', oPokemon.data.id.toString());
     oPokemon.parentEl.append(ePokemon);
     ePokemon.addEventListener("click", () => {
       _parentEl.innerHTML = "";
@@ -40,12 +40,12 @@ export class pokemonRenderer {
       <spam>${oPokemon.data.name}</spam><br>
       #${oPokemon.data.id}<br>
       type: ${oPokemon.data.pokemonTypes}<br>
-      weight: ${+oPokemon.data.weight / 10} kg <br>
-      height: ${+oPokemon.data.height * 10} cm  <br>
+      weight: ${oPokemon.data.weight / 10} kg <br>
+      height: ${oPokemon.data.height * 10} cm  <br>
       </div>
       `;
     ePokemon.classList.add('onePokemonSpecs');
-    ePokemon.setAttribute('id', oPokemon.data.id);
+    ePokemon.setAttribute('id', oPokemon.data.id.toString());
     oPokemon.parentEl.append(ePokemon);
   }
 }
